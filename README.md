@@ -1,7 +1,7 @@
 # SkyScript
 
 > A lightweight, high-performance interpreted scripting language designed for automation, rapid task execution, and web embedding.
-> > 💡 **Tip**: Click on the **Editor** button or navigate to `intl/editor.html` in your browser to launch the online code editor instantly.
+>  💡 **Tip**: Click on the **Editor** button or navigate to `intl/editor.html` in your browser to launch the online code editor instantly.
 
 ---
 
