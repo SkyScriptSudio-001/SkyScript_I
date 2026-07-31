@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang='zh-HK'>
+<head>
+    <meta charset='UTF-8'>
+    <title>SkyScript Modern IDE</title>
+    <!-- 引入 CodeMirror 核心與深色高級主題 -->
+    <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css'>
+    <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/ayu-dark.min.css'>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #0b0f19;
+            color: #f1f5f9;
+            margin: 0;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        
+        /* 頂部導航列 (高級毛玻璃質感) */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 16px 24px;
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+        
+        .logo-area { display: flex; align-items: center; gap: 12px; }
+        .logo-dot { width: 12px; height: 12px; background: #38bdf8; border-radius: 50%; box-shadow: 0 0 12px #38bdf8; }
+        h1 { font-size: 18px; font-weight: 600; color: #f8fafc; margin: 0; letter-spacing: 0.5px; }
+        
+        /* 高級按鈕 */
+        button {
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+        }
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(2, 132, 199, 0.5);
+            background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%);
+        }
+        button:active { transform: translateY(0); }
+        
+        /* 雙欄主容器 */
+        .main-container { display: flex; gap: 20px; flex: 1; min-height: 0; }
+        
+        .panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #131b2e;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+        }
+        
+        .panel h2 {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #64748b;
+            margin-top: 0;
+            margin-bottom: 14px;
+            font-weight: 600;
+        }
+        
+        /* CodeMirror 編輯器外觀微調 (配合 ayu-dark 主題) */
+        .CodeMirror {
+            flex: 1;
+            height: auto !important;
+            border-radius: 10px;
+            font-family: 'JetBrains Mono', Consolas, 'Courier New', Courier, monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: #0d1322 !important;
+        }
+        .CodeMirror-gutters {
+            background: #0d1322 !important;
+            border-right: 1px solid rgba(255, 255, 255, 0.04) !important;
+        }
+        .CodeMirror-linenumber { color: #475569 !important; }
+        
+        /* 語法高亮 Token 顏色 */
+        .cm-skyscript-keyword { color: #ff77ff; font-weight: bold; }
+        .cm-skyscript-command { color: #39ffee; font-weight: bold; }
+        .cm-skyscript-string { color: #bae6fd; }
+        .cm-skyscript-comment { color: #6272a4; font-style: italic; }
+        
+        /* 專業級終端機輸出視窗 */
+        .terminal-box {
+            flex: 1;
+            background: #0d1322;
+            color: #cbd5e1;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            padding: 16px;
+            font-family: 'JetBrains Mono', Consolas, 'Courier New', Courier, monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            overflow-y: auto;
+        }
+        .terminal-header { color: #64748b; border-bottom: 1px dashed rgba(255, 255, 255, 0.08); padding-bottom: 10px; margin-bottom: 12px; }
+        .terminal-line { margin-bottom: 6px; white-space: pre-wrap; }
+        .terminal-prompt { color: #38bdf8; margin-right: 6px; font-weight: bold; }
+        .terminal-error { color: #f87171; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class='logo-area'>
+            <div class='logo-dot'></div>
+            <h1>SkyScript Web IDE</h1>
+        </div>
+        <button onclick='runCode()'>▶ 執行程式 (Run)</button>
+    </header>
+    <div class='main-container'>
+        <div class='panel'>
+            <h2>Code Editor</h2>
+            <textarea id='codeArea'>set prog
+    set window.title "SkyScript 高級網頁編輯器"
+    set window.size "1200x800"
+    
+    ## 這是一則測試註解
+    print "歡迎使用全新高級版 SkyScript IDE！"
+    
+    def class UserDemo
+        name = "Sky"
+        score = "100"
+        print name
+    
+    skip to
+        這段程式碼會被 skip 機制自動略過
+    here
+    
+    print "執行完畢！"
+end prog</textarea>
+        </div>
+        <div class='panel'>
+            <h2>Terminal Output</h2>
+            <div id='outputArea' class='terminal-box'>
+                <div class='terminal-header'>SkyScript v1.0.0 [Ready]</div>
+                <div class='terminal-line' style='color: #64748b;'>點擊上方「執行程式」以啟動編譯與直譯器...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入 CodeMirror 核心指令碼 -->
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js'></script>
+    <script>
+        // 定義完整的 SkyScript 語法高亮解析器
+        CodeMirror.defineMode('skyscript', function() {
+            return {
+                token: function(stream) {
+                    if (stream.eatSpace()) return null;
+                    
+                    // 註解 ##
+                    if (stream.match(/^##.*/)) {
+                        stream.skipToEnd();
+                        return 'skyscript-comment';
+                    }
+                    
+                    // 字串雙引號
+                    if (stream.match(/^"[^"]*"/)) {
+                        return 'skyscript-string';
+                    }
+                    
+                    // 內建指令 window.title / window.size
+                    if (stream.match(/\bwindow\.(title|size)\b/)) {
+                        return 'skyscript-command';
+                    }
+                    
+                    // 關鍵字
+                    if (stream.match(/\b(set prog|end prog|set|def class|skip to|skip|here|print)\b/)) {
+                        return 'skyscript-keyword';
+                    }
+                    
+                    stream.next();
+                    return null;
+                }
+            };
+        });
+
+        // 初始化編輯器並套用自訂 skyscript 模式與 ayu-dark 主題
+        var editor = CodeMirror.fromTextArea(document.getElementById('codeArea'), {
+            lineNumbers: true,
+            theme: 'ayu-dark',
+            mode: 'skyscript',
+            indentUnit: 4,
+            tabSize: 4,
+            lineWrapping: true
+        });
+
+        function runCode() {
+            const code = editor.getValue();
+            const outputArea = document.getElementById('outputArea');
+            
+            let terminalHtml = '<div class=\'terminal-header\'>SkyScript v1.0.0 [Executing Process...]</div>';
+
+            const lines = code.split('\n');
+            let i = 0;
+            let hasOutput = false;
+
+            while (i < lines.length) {
+                let rawLine = lines[i];
+                let line = rawLine.trim();
+
+                if (!line || line.startsWith('##')) { i++; continue; }
+
+                hasOutput = true;
+                if (line.startsWith('set window.title')) {
+                    let title = line.replace('set window.title', '').trim().replace(/^"|"$/g, '');
+                    terminalHtml += `<div class='terminal-line'><span class='terminal-prompt'>&gt;&gt;</span> [Window Title]: ${title}</div>`;
+                } else if (line.startsWith('set window.size')) {
+                    let size = line.replace('set window.size', '').trim().replace(/^"|"$/g, '');
+                    terminalHtml += `<div class='terminal-line'><span class='terminal-prompt'>&gt;&gt;</span> [Window Size]: ${size}</div>`;
+                } else if (line.startsWith('print ')) {
+                    let content = line.substring(6).trim().replace(/^"|"$/g, '');
+                    terminalHtml += `<div class='terminal-line' style='color: #38bdf8;'><span class='terminal-prompt'>&gt;&gt;</span> ${content}</div>`;
+                } else if (line.startsWith('def class')) {
+                    let blockName = line.replace('def class', '').trim();
+                    terminalHtml += `<div class='terminal-line' style='color: #c084fc;'><span class='terminal-prompt'>&gt;&gt;</span> Enter Block: ${blockName}</div>`;
+                } else if (line === 'skip to' || line === 'skip') {
+                    terminalHtml += `<div class='terminal-line' style='color: #facc15;'><span class='terminal-prompt'>&gt;&gt;</span> Skipping block...</div>`;
+                    i++;
+                    while (i < lines.length) {
+                        let target = lines[i].trim();
+                        if (target === 'here' || target === '}') break;
+                        i++;
+                    }
+                } else if (line.includes('=')) {
+                    let parts = line.split('=');
+                    let varName = parts[0].trim();
+                    let varValue = parts[1].trim().replace(/^"|"$/g, '');
+                    terminalHtml += `<div class='terminal-line' style='color: #4ade80;'><span class='terminal-prompt'>&gt;&gt;</span> Variable [${varName}] = ${varValue}</div>`;
+                }
+                i++;
+            }
+
+            if (!hasOutput) {
+                terminalHtml += `<div class='terminal-line terminal-error'>&gt;&gt; Error: No executable instructions found.</div>`;
+            } else {
+                terminalHtml += `<div class='terminal-line' style='color: #64748b; margin-top: 10px;'>[Process exited with code 0]</div>`;
+            }
+
+            outputArea.innerHTML = terminalHtml;
+            outputArea.scrollTop = outputArea.scrollHeight;
+        }
+    </script>
+</body>
+</html>
