@@ -1,4 +1,4 @@
-# SkyScript (Global Edition)
+# SkyScript
 
 > A lightweight, high-performance interpreted scripting language designed for automation, rapid task execution, and web embedding.
 
