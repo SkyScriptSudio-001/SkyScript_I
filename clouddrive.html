@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SkyScript CloudDrive - Code Storage</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #0b0f19;
+            color: #f1f5f9;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 側邊欄 (Google Drive 風格) */
+        aside {
+            width: 260px;
+            background: #131b2e;
+            border-right: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .brand-dot { width: 12px; height: 12px; background: #38bdf8; border-radius: 50%; box-shadow: 0 0 12px #38bdf8; }
+        .brand h2 { font-size: 16px; font-weight: 600; color: #f8fafc; margin: 0; }
+
+        .new-btn-wrapper { margin-bottom: 24px; }
+        .drive-btn {
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            width: 100%;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .drive-btn:hover { box-shadow: 0 6px 16px rgba(2, 132, 199, 0.5); transform: translateY(-1px); }
+
+        .nav-menu { list-style: none; padding: 0; margin: 0; flex: 1; }
+        .nav-item {
+            padding: 10px 16px;
+            border-radius: 20px;
+            color: #94a3b8;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s;
+        }
+        .nav-item:hover, .nav-item.active { background: rgba(56, 189, 248, 0.1); color: #38bdf8; }
+
+        /* 主區域 */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #0b0f19;
+            padding: 24px 32px;
+            overflow-y: auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        .search-bar {
+            background: #131b2e;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 10px 20px;
+            width: 400px;
+            color: #f8fafc;
+            font-size: 14px;
+        }
+        .search-bar:focus { outline: none; border-color: #38bdf8; }
+
+        .user-pill {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-size: 13px;
+            color: #38bdf8;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title { font-size: 14px; color: #64748b; font-weight: 600; text-transform: uppercase; margin-bottom: 16px; letter-spacing: 0.5px; }
+
+        /* 檔案網格 / 列表卡片 */
+        .file-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+        .file-card {
+            background: #131b2e;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .file-card:hover {
+            border-color: rgba(56, 189, 248, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.4);
+        }
+        .file-icon { font-size: 24px; margin-bottom: 12px; }
+        .file-name { font-weight: 600; font-size: 14px; color: #f8fafc; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .file-meta { font-size: 12px; color: #64748b; }
+        
+        .file-actions {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            display: none;
+            gap: 6px;
+        }
+        .file-card:hover .file-actions { display: flex; }
+        .icon-btn {
+            background: rgba(0, 0, 0, 0.6);
+            border: none;
+            color: #cbd5e1;
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px;
+        }
+        .icon-btn:hover { background: #ef4444; color: white; }
+
+        /* Modal 彈窗 */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(11, 15, 25, 0.85);
+            backdrop-filter: blur(8px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-card {
+            background: #131b2e;
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+        }
+        .modal-card h3 { color: #f8fafc; margin-top: 0; font-size: 18px; margin-bottom: 16px; }
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 12px; color: #94a3b8; margin-bottom: 6px; }
+        .form-control {
+            width: 100%;
+            background: #0d1322;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: #f8fafc;
+            font-size: 14px;
+        }
+        .form-control:focus { outline: none; border-color: #38bdf8; }
+        textarea.form-control { font-family: monospace; height: 150px; resize: vertical; }
+        .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+        
+        .btn-secondary {
+            background: #334155; color: white; border: none; padding: 10px 18px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 14px;
+        }
+        .btn-success {
+            background: #10b981; color: white; border: none; padding: 10px 18px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 左側 Google Drive 風格導航欄 -->
+    <aside>
+        <div class="brand">
+            <div class="brand-dot"></div>
+            <h2>SkyDrive Code</h2>
+        </div>
+        <div class="new-btn-wrapper">
+            <button class="drive-btn" onclick="openUploadModal()">＋ 新增程式碼檔案</button>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item active">📁 我的程式碼雲端</li>
+            <li class="nav-item" onclick="location.href='editor.html'">⚡ 返回 IDE 編輯器</li>
+        </ul>
+    </aside>
+
+    <!-- 右側主內容區 -->
+    <main>
+        <header>
+            <input type="text" class="search-bar" placeholder="在雲端硬碟中搜尋程式碼..." oninput="filterFiles(this.value)">
+            <div class="user-pill">
+                <span id="userNameDisplay">Not Logged In</span>
+            </div>
+        </header>
+
+        <div class="section-title">最近儲存的程式碼檔案 (.sky)</div>
+        <div class="file-grid" id="driveFileGrid">
+            <!-- 動態渲染雲端程式碼檔案卡片 -->
+        </div>
+    </main>
+
+    <!-- 上傳 / 新增程式碼 Modal -->
+    <div id="uploadModal" class="modal-overlay">
+        <div class="modal-card">
+            <h3>☁️ 新增 / 編輯雲端程式碼</h3>
+            <div class="form-group">
+                <label>檔案名稱 (例如: app.sky)</label>
+                <input type="text" id="uploadFileName" class="form-control" value="my_script.sky">
+            </div>
+            <div class="form-group">
+                <label>SkyScript 程式碼內容</label>
+                <textarea id="uploadFileContent" class="form-control" placeholder="在此輸入或貼上您的程式碼..."></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeModal()">取消</button>
+                <button class="btn-success" onclick="saveCloudFile()">儲存至雲端</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = JSON.parse(localStorage.getItem('skyscript_user')) || null;
+
+        if (!currentUser) {
+            alert('請先在 IDE 中登入帳號！');
+            location.href = 'editor.html';
+        } else {
+            document.getElementById('userNameDisplay').innerText = currentUser.username;
+        }
+
+        function renderDriveFiles() {
+            const grid = document.getElementById('driveFileGrid');
+            grid.innerHTML = '';
+
+            let cloudStorage = JSON.parse(localStorage.getItem('skyscript_cloud_projects')) || {};
+            let userFiles = (currentUser && cloudStorage[currentUser.uuid]) ? cloudStorage[currentUser.uuid] : {};
+
+            const keys = Object.keys(userFiles);
+            if (keys.length === 0) {
+                grid.innerHTML = '<div style="color: #64748b; font-size: 14px; grid-column: span 3; padding: 20px;">雲端尚無程式碼檔案。點擊左側「新增程式碼檔案」開始上傳！</div>';
+                return;
+            }
+
+            keys.forEach(fileName => {
+                const fileData = userFiles[fileName];
+                const card = document.createElement('div');
+                card.className = 'file-card';
+                card.innerHTML = `
+                    <div class="file-icon">📜</div>
+                    <div class="file-name">${fileName}</div>
+                    <div class="file-meta">修改時間: ${fileData.updatedAt}</div>
+                    <div class="file-actions">
+                        <button class="icon-btn" title="刪除檔案" onclick="deleteFile(event, '${fileName}')">🗑️</button>
+                    </div>
+                `;
+                // 點擊卡片直接下載或預覽該程式碼
+                card.onclick = function(e) {
+                    if(e.target.tagName === 'BUTTON') return;
+                    openEditFile(fileName, fileData.content);
+                };
+                grid.appendChild(card);
+            });
+        }
+
+        function openUploadModal() {
+            document.getElementById('uploadFileName').value = 'new_project.sky';
+            document.getElementById('uploadFileContent').value = 'set prog\n    print "Hello from SkyDrive"\nend prog';
+            document.getElementById('uploadModal').style.display = 'flex';
+        }
+
+        function openEditFile(fileName, content) {
+            document.getElementById('uploadFileName').value = fileName;
+            document.getElementById('uploadFileContent').value = content;
+            document.getElementById('uploadModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('uploadModal').style.display = 'none';
+        }
+
+        function saveCloudFile() {
+            const fileName = document.getElementById('uploadFileName').value.trim();
+            const content = document.getElementById('uploadFileContent').value;
+
+            if (!fileName) { alert('請輸入檔名！'); return; }
+
+            let cloudStorage = JSON.parse(localStorage.getItem('skyscript_cloud_projects')) || {};
+            if (!cloudStorage[currentUser.uuid]) cloudStorage[currentUser.uuid] = {};
+
+            cloudStorage[currentUser.uuid][fileName] = {
+                content: content,
+                updatedAt: new Date().toLocaleString()
+            };
+
+            localStorage.setItem('skyscript_cloud_projects', JSON.stringify(cloudStorage));
+            closeModal();
+            renderDriveFiles();
+        }
+
+        function deleteFile(event, fileName) {
+            event.stopPropagation();
+            if (confirm(`確定要刪除雲端檔案 "${fileName}" 嗎？`)) {
+                let cloudStorage = JSON.parse(localStorage.getItem('skyscript_cloud_projects')) || {};
+                if (cloudStorage[currentUser.uuid]) {
+                    delete cloudStorage[currentUser.uuid][fileName];
+                    localStorage.setItem('skyscript_cloud_projects', JSON.stringify(cloudStorage));
+                    renderDriveFiles();
+                }
+            }
+        }
+
+        function filterFiles(query) {
+            const cards = document.querySelectorAll('.file-card');
+            cards.forEach(card => {
+                const name = card.querySelector('.file-name').innerText.toLowerCase();
+                card.style.display = name.includes(query.toLowerCase()) ? 'block' : 'none';
+            });
+        }
+
+        renderDriveFiles();
+    </script>
+</body>
+</html>
