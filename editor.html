@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang='zh-HK'>
+<html lang="en">
 <head>
-    <meta charset='UTF-8'>
-    <title>SkyScript Modern IDE</title>
-    <!-- 引入 CodeMirror 核心與深色高級主題 -->
-    <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css'>
-    <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/ayu-dark.min.css'>
+    <meta charset="UTF-8">
+    <title>SkyScript Modern IDE - International Edition [Modal Enabled]</title>
+    <!-- CodeMirror 核心與主題 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/ayu-dark.min.css">
     <style>
         * { box-sizing: border-box; }
         body {
@@ -18,8 +18,8 @@
             flex-direction: column;
             height: 100vh;
         }
-        
-        /* 頂部導航列 (高級毛玻璃質感) */
+       
+        /* 頂部導航列 */
         header {
             display: flex;
             justify-content: space-between;
@@ -32,34 +32,66 @@
             border-radius: 16px;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
         }
-        
+       
         .logo-area { display: flex; align-items: center; gap: 12px; }
         .logo-dot { width: 12px; height: 12px; background: #38bdf8; border-radius: 50%; box-shadow: 0 0 12px #38bdf8; }
         h1 { font-size: 18px; font-weight: 600; color: #f8fafc; margin: 0; letter-spacing: 0.5px; }
-        
-        /* 高級按鈕 */
-        button {
+       
+        .header-actions { display: flex; gap: 10px; align-items: center; }
+        /* 高級按鈕與標籤 */
+        button, .file-btn {
             background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 10px 18px;
             border-radius: 10px;
             cursor: pointer;
             font-weight: 600;
             font-size: 14px;
             transition: all 0.2s ease;
             box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
         }
-        button:hover {
+        button:hover, .file-btn:hover {
             transform: translateY(-1px);
             box-shadow: 0 6px 16px rgba(2, 132, 199, 0.5);
             background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%);
         }
-        button:active { transform: translateY(0); }
-        
+        button:active, .file-btn:active { transform: translateY(0); }
+        .btn-secondary {
+            background: linear-gradient(135deg, #334155 0%, #1e293b 100%);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .btn-secondary:hover { background: linear-gradient(135deg, #475569 0%, #334155 100%); }
+        .btn-accent {
+            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+        .btn-accent:hover { background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%); }
+        .btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        .btn-success:hover { background: linear-gradient(135deg, #059669 0%, #047857 100%); }
+        .user-pill {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+       
         /* 雙欄主容器 */
         .main-container { display: flex; gap: 20px; flex: 1; min-height: 0; }
-        
+       
         .panel {
             flex: 1;
             display: flex;
@@ -70,7 +102,7 @@
             padding: 20px;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
         }
-        
+       
         .panel h2 {
             font-size: 13px;
             text-transform: uppercase;
@@ -80,8 +112,8 @@
             margin-bottom: 14px;
             font-weight: 600;
         }
-        
-        /* CodeMirror 編輯器外觀微調 (配合 ayu-dark 主題) */
+       
+        /* CodeMirror 樣式微調 */
         .CodeMirror {
             flex: 1;
             height: auto !important;
@@ -97,14 +129,14 @@
             border-right: 1px solid rgba(255, 255, 255, 0.04) !important;
         }
         .CodeMirror-linenumber { color: #475569 !important; }
-        
-        /* 語法高亮 Token 顏色 */
-        .cm-skyscript-keyword { color: #ff77ff; font-weight: bold; }
-        .cm-skyscript-command { color: #39ffee; font-weight: bold; }
-        .cm-skyscript-string { color: #bae6fd; }
-        .cm-skyscript-comment { color: #6272a4; font-style: italic; }
-        
-        /* 專業級終端機輸出視窗 */
+       
+        /* 自定義高亮顏色類別 */
+        .cm-skyscript-comment { color: #64748b; font-style: italic; }
+        .cm-skyscript-string { color: #38bdf8; }
+        .cm-skyscript-command { color: #f472b6; }
+        .cm-skyscript-keyword { color: #c084fc; font-weight: bold; }
+
+        /* 終端機輸出視窗 */
         .terminal-box {
             flex: 1;
             background: #0d1322;
@@ -121,84 +153,191 @@
         .terminal-line { margin-bottom: 6px; white-space: pre-wrap; }
         .terminal-prompt { color: #38bdf8; margin-right: 6px; font-weight: bold; }
         .terminal-error { color: #f87171; }
+        
+        /* 通用 Modal 彈窗 */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(11, 15, 25, 0.85);
+            backdrop-filter: blur(8px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-card {
+            background: #131b2e;
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+            max-width: 520px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+        }
+        .modal-card h3 { color: #f8fafc; margin-top: 0; font-size: 20px; display: flex; align-items: center; gap: 8px; }
+        .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 12px; color: #94a3b8; margin-bottom: 6px; }
+        .form-control {
+            width: 100%;
+            background: #0d1322;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: #f8fafc;
+            font-size: 14px;
+        }
+        .form-control:focus { outline: none; border-color: #38bdf8; }
+        .project-list { max-height: 200px; overflow-y: auto; margin-top: 10px; }
+        .project-item {
+            background: #0d1322;
+            padding: 10px 12px;
+            border-radius: 8px;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        .rules-box {
+            background: #0d1322;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 13px;
+            line-height: 1.8;
+            color: #cbd5e1;
+        }
+        .rules-box ol { margin: 0; padding-left: 20px; }
+        .rules-box li { margin-bottom: 8px; }
     </style>
 </head>
 <body>
     <header>
-        <div class='logo-area'>
-            <div class='logo-dot'></div>
-            <h1>SkyScript Web IDE</h1>
+        <div class="logo-area">
+            <div class="logo-dot"></div>
+            <h1>SkyScript Web IDE [Modal Enabled]</h1>
         </div>
-        <button onclick='runCode()'>▶ 執行程式 (Run)</button>
+        <div class="header-actions">
+            <div class="user-pill" onclick="openLoginModal()">
+                <span id="userAvatarDot" style="width: 8px; height: 8px; background: #10b981; border-radius: 50%;"></span>
+                <span id="userDisplayName">Local User</span>
+            </div>
+            <button class="btn-accent" onclick="openModal('customScriptModal')">⚙️ Modal UI</button>
+            <button class="btn-secondary" onclick="openModal('rulesModal')">📜 Terms</button>
+            <input type="file" id="fileInput" style="display: none;" onchange="importFile(event)">
+            <button class="btn-secondary" onclick="document.getElementById('fileInput').click()">📁 Open</button>
+            <button class="btn-secondary" onclick="openCloudSaveModal()">☁️ Cloud Save</button>
+            <button class="btn-secondary" onclick="saveFile()">💾 Local</button>
+            <button class="btn-success" onclick="runSkyCheckAudit()">▶ Run Code</button>
+        </div>
     </header>
-    <div class='main-container'>
-        <div class='panel'>
+    <div class="main-container">
+        <div class="panel">
             <h2>Code Editor</h2>
-            <textarea id='codeArea'>set prog
-    set window.title "SkyScript 高級網頁編輯器"
+            <textarea id="codeArea">set prog
+    set window.title "SkyScript Modal Demo"
     set window.size "1200x800"
-    
-    ## 這是一則測試註解
-    print "歡迎使用全新高級版 SkyScript IDE！"
-    
-    def class UserDemo
-        name = "Sky"
-        score = "100"
-        print name
-    
-    skip to
-        這段程式碼會被 skip 機制自動略過
-    here
-    
-    print "執行完畢！"
+   
+    ## Test custom modal trigger from code
+    set window.modal "Hello from SkyScript runtime dialog!"
+   
+    print "Script executed successfully with modal support."
 end prog</textarea>
         </div>
-        <div class='panel'>
+        <div class="panel">
             <h2>Terminal Output</h2>
-            <div id='outputArea' class='terminal-box'>
-                <div class='terminal-header'>SkyScript v1.0.0 [Ready]</div>
-                <div class='terminal-line' style='color: #64748b;'>點擊上方「執行程式」以啟動編譯與直譯器...</div>
+            <div id="outputArea" class="terminal-box">
+                <div class="terminal-header">SkyScript v1.0.0 [Ready]</div>
+                <div class="terminal-line" style="color: #64748b;">Click "Run Code" to execute...</div>
             </div>
         </div>
     </div>
 
-    <!-- 引入 CodeMirror 核心指令碼 -->
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js'></script>
+    <!-- 腳本動態呼叫的彈窗 (Modal UI) -->
+    <div id="customScriptModal" class="modal-overlay">
+        <div class="modal-card">
+            <h3 id="scriptModalTitle">💬 SkyScript Runtime Dialog</h3>
+            <div class="form-group" style="margin-top: 14px;">
+                <p id="scriptModalContent" style="color: #cbd5e1; font-size: 14px; line-height: 1.6; margin: 0;">
+                    This is an interactive runtime modal triggered by user interface or script execution.
+                </p>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-success" onclick="closeModal('customScriptModal')">Confirm</button>
+                <button class="btn-secondary" onclick="closeModal('customScriptModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SkyScript 使用規定 Modal -->
+    <div id="rulesModal" class="modal-overlay">
+        <div class="modal-card">
+            <h3>📜 SkyScript 使用規定 (Terms of Use)</h3>
+            <div class="rules-box">
+                <ol>
+                    <li><b>Modal 擴充功能已啟用</b>：支援透過 <code>set window.modal "訊息文字"</code> 指令直接在代碼中呼叫彈窗。</li>
+                </ol>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeModal('rulesModal')">Understood</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 帳號登入與註冊 Modal -->
+    <div id="loginModal" class="modal-overlay">
+        <div class="modal-card">
+            <div id="loggedInProfileSection">
+                <h3>👤 Account Profile</h3>
+                <div class="form-group" style="margin-top: 10px;">
+                    <div id="profileDetails" style="padding: 12px; background: #0d1322; border-radius: 8px; font-size: 13px; color: #38bdf8; line-height: 1.6;">
+                        Mode: <b>Modal & Unrestricted Enabled</b>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-secondary" onclick="closeModal('loginModal')">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 雲端儲存 Modal -->
+    <div id="cloudSaveModal" class="modal-overlay">
+        <div class="modal-card">
+            <h3>☁️ Cloud Workspace</h3>
+            <div class="form-group">
+                <label>Project Name</label>
+                <input type="text" id="projectNameInput" class="form-control" value="MySkyScriptProject.sky">
+            </div>
+            <div class="form-group" style="margin-top: 14px;">
+                <label>Cloud History</label>
+                <div class="project-list" id="cloudProjectList"></div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-success" onclick="saveToCloud()">Upload to Cloud</button>
+                <button class="btn-secondary" onclick="closeModal('cloudSaveModal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
     <script>
-        // 定義完整的 SkyScript 語法高亮解析器
+        // --- 擴充自定義語法高亮模式 (支援 window.modal) ---
         CodeMirror.defineMode('skyscript', function() {
             return {
                 token: function(stream) {
                     if (stream.eatSpace()) return null;
-                    
-                    // 註解 ##
-                    if (stream.match(/^##.*/)) {
-                        stream.skipToEnd();
-                        return 'skyscript-comment';
-                    }
-                    
-                    // 字串雙引號
-                    if (stream.match(/^"[^"]*"/)) {
-                        return 'skyscript-string';
-                    }
-                    
-                    // 內建指令 window.title / window.size
-                    if (stream.match(/\bwindow\.(title|size)\b/)) {
-                        return 'skyscript-command';
-                    }
-                    
-                    // 關鍵字
-                    if (stream.match(/\b(set prog|end prog|set|def class|skip to|skip|here|print)\b/)) {
-                        return 'skyscript-keyword';
-                    }
-                    
+                    if (stream.match(/^##.*/)) { stream.skipToEnd(); return 'skyscript-comment'; }
+                    if (stream.match(/^"[^"]*"/)) { return 'skyscript-string'; }
+                    if (stream.match(/\bwindow\.(title|size|modal)\b/)) { return 'skyscript-command'; }
+                    if (stream.match(/\b(set prog|end prog|set|def class|skip to|skip|here|print)\b/)) { return 'skyscript-keyword'; }
                     stream.next();
                     return null;
                 }
             };
         });
 
-        // 初始化編輯器並套用自訂 skyscript 模式與 ayu-dark 主題
         var editor = CodeMirror.fromTextArea(document.getElementById('codeArea'), {
             lineNumbers: true,
             theme: 'ayu-dark',
@@ -208,61 +347,133 @@ end prog</textarea>
             lineWrapping: true
         });
 
-        function runCode() {
+        let currentUser = { username: 'LocalDeveloper', uuid: 'usr_local_001' };
+
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        function openLoginModal() { openModal('loginModal'); }
+
+        function runSkyCheckAudit() {
+            executeCode();
+        }
+
+        // --- 程式碼直譯器 (支援解析 window.modal 指令) ---
+        function executeCode() {
             const code = editor.getValue();
             const outputArea = document.getElementById('outputArea');
-            
-            let terminalHtml = '<div class=\'terminal-header\'>SkyScript v1.0.0 [Executing Process...]</div>';
-
+            let terminalHtml = '<div class="terminal-header">SkyScript Process Output [Modal & Executing]</div>';
             const lines = code.split('\n');
             let i = 0;
             let hasOutput = false;
-
             while (i < lines.length) {
-                let rawLine = lines[i];
-                let line = rawLine.trim();
-
+                let line = lines[i].trim();
                 if (!line || line.startsWith('##')) { i++; continue; }
-
                 hasOutput = true;
                 if (line.startsWith('set window.title')) {
                     let title = line.replace('set window.title', '').trim().replace(/^"|"$/g, '');
-                    terminalHtml += `<div class='terminal-line'><span class='terminal-prompt'>&gt;&gt;</span> [Window Title]: ${title}</div>`;
+                    terminalHtml += `<div class="terminal-line"><span class="terminal-prompt">&gt;&gt;</span> [Window Title]: ${title}</div>`;
                 } else if (line.startsWith('set window.size')) {
                     let size = line.replace('set window.size', '').trim().replace(/^"|"$/g, '');
-                    terminalHtml += `<div class='terminal-line'><span class='terminal-prompt'>&gt;&gt;</span> [Window Size]: ${size}</div>`;
+                    terminalHtml += `<div class="terminal-line"><span class="terminal-prompt">&gt;&gt;</span> [Window Size]: ${size}</div>`;
+                } else if (line.startsWith('set window.modal')) {
+                    let modalMsg = line.replace('set window.modal', '').trim().replace(/^"|"$/g, '');
+                    document.getElementById('scriptModalContent').innerText = modalMsg;
+                    openModal('customScriptModal');
+                    terminalHtml += `<div class="terminal-line" style="color: #8b5cf6;"><span class="terminal-prompt">&gt;&gt;</span> [Trigger Modal]: ${modalMsg}</div>`;
                 } else if (line.startsWith('print ')) {
                     let content = line.substring(6).trim().replace(/^"|"$/g, '');
-                    terminalHtml += `<div class='terminal-line' style='color: #38bdf8;'><span class='terminal-prompt'>&gt;&gt;</span> ${content}</div>`;
+                    terminalHtml += `<div class="terminal-line" style="color: #38bdf8;"><span class="terminal-prompt">&gt;&gt;</span> ${content}</div>`;
                 } else if (line.startsWith('def class')) {
                     let blockName = line.replace('def class', '').trim();
-                    terminalHtml += `<div class='terminal-line' style='color: #c084fc;'><span class='terminal-prompt'>&gt;&gt;</span> Enter Block: ${blockName}</div>`;
-                } else if (line === 'skip to' || line === 'skip') {
-                    terminalHtml += `<div class='terminal-line' style='color: #facc15;'><span class='terminal-prompt'>&gt;&gt;</span> Skipping block...</div>`;
-                    i++;
-                    while (i < lines.length) {
-                        let target = lines[i].trim();
-                        if (target === 'here' || target === '}') break;
-                        i++;
-                    }
+                    terminalHtml += `<div class="terminal-line" style="color: #c084fc;"><span class="terminal-prompt">&gt;&gt;</span> Enter Block: ${blockName}</div>`;
                 } else if (line.includes('=')) {
                     let parts = line.split('=');
                     let varName = parts[0].trim();
                     let varValue = parts[1].trim().replace(/^"|"$/g, '');
-                    terminalHtml += `<div class='terminal-line' style='color: #4ade80;'><span class='terminal-prompt'>&gt;&gt;</span> Variable [${varName}] = ${varValue}</div>`;
+                    terminalHtml += `<div class="terminal-line" style="color: #4ade80;"><span class="terminal-prompt">&gt;&gt;</span> Variable [${varName}] = ${varValue}</div>`;
                 }
                 i++;
             }
-
             if (!hasOutput) {
-                terminalHtml += `<div class='terminal-line terminal-error'>&gt;&gt; Error: No executable instructions found.</div>`;
+                terminalHtml += `<div class="terminal-line terminal-error">&gt;&gt; Error: No executable instructions found.</div>`;
             } else {
-                terminalHtml += `<div class='terminal-line' style='color: #64748b; margin-top: 10px;'>[Process exited with code 0]</div>`;
+                terminalHtml += `<div class="terminal-line" style="color: #64748b; margin-top: 10px;">[Process exited with code 0]</div>`;
             }
-
             outputArea.innerHTML = terminalHtml;
             outputArea.scrollTop = outputArea.scrollHeight;
         }
+
+        // --- 檔案與雲端功能 ---
+        function saveFile() {
+            const code = editor.getValue();
+            const blob = new Blob([code], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'script.sky';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        function importFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                editor.setValue(e.target.result);
+                event.target.value = '';
+            };
+            reader.readAsText(file);
+        }
+        function openCloudSaveModal() {
+            renderCloudProjects();
+            openModal('cloudSaveModal');
+        }
+        function saveToCloud() {
+            const projectName = document.getElementById('projectNameInput').value.trim() || 'untitled.sky';
+            let cloudStorage = JSON.parse(localStorage.getItem('skyscript_cloud_projects')) || {};
+            if (!cloudStorage[currentUser.uuid]) cloudStorage[currentUser.uuid] = {};
+            cloudStorage[currentUser.uuid][projectName] = {
+                content: editor.getValue(),
+                updatedAt: new Date().toLocaleString()
+            };
+            localStorage.setItem('skyscript_cloud_projects', JSON.stringify(cloudStorage));
+            alert(`Project "${projectName}" saved to cloud!`);
+            renderCloudProjects();
+        }
+        function renderCloudProjects() {
+            const list = document.getElementById('cloudProjectList');
+            list.innerHTML = '';
+            let cloudStorage = JSON.parse(localStorage.getItem('skyscript_cloud_projects')) || {};
+            let userProjects = cloudStorage[currentUser.uuid] || {};
+            const keys = Object.keys(userProjects);
+            if (keys.length === 0) {
+                list.innerHTML = '<div style="color: #64748b; font-size: 13px; text-align: center; padding: 10px;">No cloud projects found.</div>';
+                return;
+            }
+            keys.forEach(fileName => {
+                const item = document.createElement('div');
+                item.className = 'project-item';
+                item.innerHTML = `
+                    <div>
+                        <div style="font-weight: 600; color: #f8fafc; font-size: 13px;">${fileName}</div>
+                        <div style="font-size: 11px; color: #64748b;">Updated: ${userProjects[fileName].updatedAt}</div>
+                    </div>
+                    <button class="btn-secondary" style="padding: 4px 10px; font-size: 12px;" onclick="loadCloudProject('${fileName}')">Load</button>
+                `;
+                list.appendChild(item);
+            });
+        }
+        function loadCloudProject(fileName) {
+            let cloudStorage = JSON.parse(localStorage.getItem('skyscript_cloud_projects')) || {};
+            let userProjects = cloudStorage[currentUser.uuid] || {};
+            if (userProjects[fileName]) {
+                editor.setValue(userProjects[fileName].content);
+                document.getElementById('projectNameInput').value = fileName;
+                closeModal('cloudSaveModal');
+            }
+        }
     </script>
 </body>
-</html>
+</html>v
